@@ -18,6 +18,7 @@ class Profile {
   final String sessionID;
   final bool serverSideAds;
   final String userId;
+  late Map<String, String> queryParams;
 
   String? clientID;
   String? deviceId;
@@ -62,10 +63,42 @@ class Profile {
     sid = sid ?? const Uuid().v4();
 
     marketingRegion = marketingRegion ?? country;
+
+    queryParams = {
+      'advertisingId': advertisingId,
+      'appName': appName,
+      'terminate': terminate.toString(),
+      'appVersion': appVersion,
+      'architecture': architecture ?? '',
+      'buildVersion': buildVersion ?? '',
+      'clientTime': clientTime ?? '',
+      'deviceDNT': deviceDNT.toString(),
+      'deviceId': deviceId ?? '',
+      'deviceLat': deviceLat.toString(),
+      'deviceLon': deviceLon.toString(),
+      'deviceMake': deviceMake,
+      'deviceModel': deviceModel ?? '',
+      'deviceType': deviceType ?? '',
+      'deviceVersion': deviceVersion,
+      'includeExtendedEvents': includeExtendedEvents.toString(),
+      'marketingRegion': marketingRegion ?? '',
+      'country': country,
+      'serverSideAds': serverSideAds.toString(),
+      'sid': sid ?? '',
+      'clientID': clientID ?? '',
+      'clientModelNumber': clientModelNumber,
+      'clientDeviceType': clientDeviceType.toString(),
+      'sessionID': sessionID,
+      'userId': userId
+    };
+  }
+
+  Map<String, String> toMap() {
+    return queryParams;
   }
 
   @override
   String toString() {
-    return "advertisingId=$advertisingId&appName=$appName&terminate=$terminate&appVersion=$appVersion${architecture != null ? "&architecture=$architecture" : ""}${buildVersion != null ? "&buildVersion=$buildVersion" : ""}${clientTime != null ? "&clientTime=$clientTime" : ""}&deviceDNT=$deviceDNT&deviceId=$deviceId&deviceLat=$deviceLat&deviceLon=$deviceLon&deviceMake=$deviceMake&deviceModel=$deviceModel&deviceType=$deviceType&deviceVersion=$deviceVersion&includeExtendedEvents=$includeExtendedEvents&marketingRegion=$marketingRegion&country=$country&serverSideAds=$serverSideAds&sid=$sid&clientID=$clientID&clientModelNumber=$clientModelNumber&clientDeviceType=$clientDeviceType&sessionID=$sessionID&userId=$userId";
+    return Uri(queryParameters: queryParams).query;
   }
 }

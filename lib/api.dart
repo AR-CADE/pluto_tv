@@ -14,25 +14,27 @@ class API {
   }) async {
     profile = profile ?? Profile(appName: "web");
 
-    final param = "appName=${profile.appName}"
-        "&appVersion=${profile.appVersion}"
-        "&clientTime=${DateTime.now().toUtc().toIso8601String()}"
-        "&deviceMake=${profile.deviceMake}"
-        "&deviceModel=${profile.deviceModel}"
-        "&deviceType=${profile.deviceType}"
-        "&deviceVersion=${profile.deviceVersion}"
-        "&serverSideAds=${profile.serverSideAds}"
-        "&clientID=${profile.clientID}"
-        "&clientModelNumber=${profile.clientModelNumber}"
-        "&constraints="
-        "&channelSlug=";
-
-    final url = "https://boot.pluto.tv/v4/start?$param";
-
-    debugPrint(url);
+    Map<String, String> queryParams = {
+      'appName': profile.appName,
+      'appVersion': profile.appVersion,
+      'clientTime': DateTime.now().toUtc().toIso8601String(),
+      'deviceMake': profile.deviceMake,
+      'deviceModel': profile.deviceModel ?? '',
+      'deviceType': profile.deviceType ?? '',
+      'deviceVersion': profile.deviceVersion,
+      'serverSideAds': profile.serverSideAds.toString(),
+      'clientID': profile.clientID ?? '',
+      'clientModelNumber': profile.clientModelNumber,
+      'constraints': '',
+      'channelSlug': ''
+    };
 
     http.Response response = await http.get(
-      Uri.parse(url),
+      Uri(
+          scheme: 'https',
+          host: 'boot.pluto.tv',
+          path: 'v4/start',
+          queryParameters: queryParams),
     );
 
     if (response.statusCode == 200) {
@@ -50,11 +52,17 @@ class API {
     start = start ?? DateTime.now();
     end = DateTime.now().add(const Duration(minutes: 45));
 
-    final url =
-        "https://api.pluto.tv/v2/channels?start=${start.toUtc().toIso8601String()}&stop=${end.toUtc().toIso8601String()}";
+    Map<String, String> queryParams = {
+      'start': start.toUtc().toIso8601String(),
+      'stop': end.toUtc().toIso8601String()
+    };
 
     http.Response response = await http.get(
-      Uri.parse(url),
+      Uri(
+          scheme: 'https',
+          host: 'api.pluto.tv',
+          path: 'v2/channels',
+          queryParameters: queryParams),
     );
 
     if (response.statusCode == 200) {
@@ -81,12 +89,17 @@ class API {
       {DateTime? start, int duration = 240}) async {
     start = start ?? DateTime.now();
 
-    final url =
-        "https://service-channels.clusters.pluto.tv/v2/guide/timelines?start=${start.toUtc().toIso8601String()}&channelIds=${channelIds.join(',')}&duration=$duration";
+    Map<String, String> queryParams = {
+      'start': start.toUtc().toIso8601String(),
+      'channelIds': channelIds.join(','),
+      'duration': duration.toString()
+    };
 
-    http.Response response = await http.get(
-      Uri.parse(url),
-    );
+    http.Response response = await http.get(Uri(
+        scheme: 'https',
+        host: 'service-channels.clusters.pluto.tv',
+        path: 'v2/guide/timelines',
+        queryParameters: queryParams));
 
     if (response.statusCode == 200) {
       return compute(parseTimelines, response.bodyBytes);

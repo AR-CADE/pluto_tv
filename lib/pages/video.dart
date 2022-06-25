@@ -163,10 +163,14 @@ class VideoPageState extends State<VideoPage> {
   }
 
   Widget player(Channel data) {
-    final url =
-        "https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${data.id}/master.m3u8?${profile.toString()}";
+    final uri = Uri(
+        scheme: 'https',
+        host: 'service-stitcher.clusters.pluto.tv',
+        path: 'stitch/hls/channel/${data.id}/master.m3u8',
+        queryParameters: profile.toMap());
+
     return PetitPlayer(
-      url: url,
+      url: uri.toString(),
       videoLoadingStyle: VideoLoadingStyle(
         loading: Center(
           child: VideoSplash(channel: data),

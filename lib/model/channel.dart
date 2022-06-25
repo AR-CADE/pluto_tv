@@ -1,10 +1,7 @@
 import 'package:pluto_tv/model/path.dart';
-import 'package:pluto_tv/model/profile.dart';
 import 'package:pluto_tv/model/slug.dart';
 import 'package:pluto_tv/model/stitched.dart';
 import 'package:pluto_tv/model/simple_object.dart';
-
-final Profile defaultProfile = Profile();
 
 class Channel implements SimpleObject, Slug {
   final String hash;
@@ -102,10 +99,5 @@ class Channel implements SimpleObject, Slug {
       isStitched: json['isStitched'] as bool,
       stitched: Stitched.fromJSON(json['stitched']),
     );
-  }
-
-  String url({Profile? profile}) {
-    profile = profile ?? defaultProfile;
-    return "https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/$id/master.m3u8?${profile.toString()}";
   }
 }
