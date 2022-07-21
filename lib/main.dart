@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pluto_tv/pages/home.dart';
 
 class CustomScrollBehavior extends MaterialScrollBehavior {
@@ -16,6 +17,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   //await API.boot();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
   runApp(MaterialApp(
     scrollBehavior: CustomScrollBehavior(),

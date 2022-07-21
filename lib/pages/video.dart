@@ -41,7 +41,7 @@ class VideoPageState extends State<VideoPage> {
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     clearOverlayTimer();
     super.dispose();
   }
@@ -61,12 +61,19 @@ class VideoPageState extends State<VideoPage> {
     overlayTimer?.cancel();
   }
 
-  OverlayEntry _createTopOverlayEntry() {
+  OverlayEntry _createTopOverlayEntry(BoxConstraints constraints) {
     return OverlayEntry(
         builder: (context) => TopBar(
             onShowDrawer: () {
               setState(() {
                 showDrawer = !showDrawer;
+                if (constraints.maxWidth < 950) {
+                  if (showDrawer) {
+                    Scaffold.of(context).openDrawer();
+                  } else {
+                    Scaffold.of(context).closeDrawer();
+                  }
+                }
               });
             },
             close: () => Navigator.of(context).pop()));
@@ -78,7 +85,8 @@ class VideoPageState extends State<VideoPage> {
         builder: (context) => ControlPanel(controller: videoController));
   }
 
-  OverlayEntry _creatBottomOverlayEntry(VideoPlayerController videoController) {
+  OverlayEntry _createBottomOverlayEntry(
+      VideoPlayerController videoController) {
     return OverlayEntry(
         builder: (context) => BottomBar(controller: videoController));
   }
@@ -103,63 +111,83 @@ class VideoPageState extends State<VideoPage> {
   Widget build(BuildContext context) {
     final cn = channel;
     final ctrl = controller;
-    return Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Row(children: [
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              child: SizedBox(
-                width: showDrawer ? 600 : 0,
-                child: showDrawer
-                    ? Channels(onTap: (Channel c) {
-                        clearOverlayTimer();
-                        setState(() {
-                          showOverlay = false;
-                          channel = c;
-                        });
-                      })
-                    : null,
-              ),
-            ),
-            Expanded(
-                child: GestureDetector(
-                    onTap: () {
-                      toggleControls();
-                    },
-                    child: Container(
-                      color: Colors.black,
-                      child: Stack(
-                        children: [
-                          Center(
-                              child: FutureBuilder<Channel?>(
-                                  future: Future(() => cn),
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<Channel?> snapshot) {
-                                    final data = snapshot.data;
-                                    if (data != null) {
-                                      if (snapshot.hasData) {
-                                        return player(data);
-                                      } else if (snapshot.hasError) {
-                                        return const ErrorDisplay();
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      return Scaffold(
+          backgroundColor: Colors.black,
+          drawer: (constraints.maxWidth < 950)
+              ? Drawer(
+                  backgroundColor: Colors.black,
+                  width: constraints.maxWidth * (80 / 100),
+                  child: Builder(builder: (context) {
+                    return Channels(onTap: (Channel c) {
+                      clearOverlayTimer();
+                      Scaffold.of(context).closeDrawer();
+                      setState(() {
+                        showOverlay = false;
+                        channel = c;
+                        showDrawer = false;
+                      });
+                    });
+                  }))
+              : null,
+          body: SafeArea(
+            child: Row(children: [
+              if (constraints.maxWidth > 950)
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: SizedBox(
+                    width: showDrawer ? (constraints.maxWidth * (33 / 100)) : 0,
+                    child: showDrawer
+                        ? Channels(onTap: (Channel c) {
+                            clearOverlayTimer();
+                            setState(() {
+                              showOverlay = false;
+                              channel = c;
+                            });
+                          })
+                        : null,
+                  ),
+                ),
+              Expanded(
+                  child: GestureDetector(
+                      onTap: () {
+                        toggleControls();
+                      },
+                      child: Container(
+                        color: Colors.black,
+                        child: Stack(
+                          children: [
+                            Center(
+                                child: FutureBuilder<Channel?>(
+                                    future: Future(() => cn),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<Channel?> snapshot) {
+                                      final data = snapshot.data;
+                                      if (data != null) {
+                                        if (snapshot.hasData) {
+                                          return player(data);
+                                        } else if (snapshot.hasError) {
+                                          return const ErrorDisplay();
+                                        }
                                       }
-                                    }
-                                    return const Loader();
-                                  })),
-                          if (showOverlay)
-                            Overlay(initialEntries: [
-                              _createTopOverlayEntry(),
-                              if (ctrl != null) ...[
-                                _createControlOverlayEntry(ctrl),
-                                _creatBottomOverlayEntry(ctrl)
-                              ]
-                            ])
-                        ],
-                      ),
-                    ))),
-          ]),
-        ));
+                                      return const Loader();
+                                    })),
+                            if (showOverlay)
+                              Overlay(initialEntries: [
+                                _createTopOverlayEntry(constraints),
+                                if (ctrl != null) ...[
+                                  _createControlOverlayEntry(ctrl),
+                                  _createBottomOverlayEntry(ctrl)
+                                ]
+                              ])
+                          ],
+                        ),
+                      ))),
+            ]),
+          ));
+    });
   }
 
   Widget player(Channel data) {
